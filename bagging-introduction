@@ -1,0 +1,165 @@
+# Bagging Ensemble Learning
+
+import numpy as np
+
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.tree import DecisionTreeClassifier
+
+from sklearn.ensemble import (
+    BaggingClassifier,
+    RandomForestClassifier,
+    ExtraTreesClassifier
+)
+
+from sklearn.metrics import accuracy_score
+
+# Load Dataset
+
+X, y = load_iris(return_X_y=True)
+
+print("Dataset Information")
+print("-" * 40)
+print("Features Shape:", X.shape)
+print("Target Shape:", y.shape)
+
+# Split Dataset
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42,
+    stratify=y
+)
+
+# Individual Decision Tree
+
+decision_tree = DecisionTreeClassifier(
+    random_state=42
+)
+
+decision_tree.fit(X_train, y_train)
+
+dt_prediction = decision_tree.predict(X_test)
+
+dt_accuracy = accuracy_score(
+    y_test,
+    dt_prediction
+)
+
+
+print("\nIndividual Decision Tree Performance")
+print("-" * 40)
+print("Accuracy:", round(dt_accuracy, 4))
+
+# Bagging Classifier
+
+bagging_classifier = BaggingClassifier(
+    estimator=DecisionTreeClassifier(),
+    n_estimators=100,
+    random_state=42
+)
+
+bagging_classifier.fit(X_train, y_train)
+
+bagging_prediction = bagging_classifier.predict(X_test)
+
+bagging_accuracy = accuracy_score(
+    y_test,
+    bagging_prediction
+)
+
+
+print("\nBagging Classifier Performance")
+print("-" * 40)
+print("Accuracy:", round(bagging_accuracy, 4))
+
+# Random Forest Classifier
+
+random_forest = RandomForestClassifier(
+    n_estimators=100,
+    random_state=42
+)
+
+random_forest.fit(X_train, y_train)
+
+rf_prediction = random_forest.predict(X_test)
+
+rf_accuracy = accuracy_score(
+    y_test,
+    rf_prediction
+)
+
+
+print("\nRandom Forest Performance")
+print("-" * 40)
+print("Accuracy:", round(rf_accuracy, 4))
+
+# Extra Trees Classifier
+
+extra_trees = ExtraTreesClassifier(
+    n_estimators=100,
+    random_state=42
+)
+
+extra_trees.fit(X_train, y_train)
+
+et_prediction = extra_trees.predict(X_test)
+
+et_accuracy = accuracy_score(
+    y_test,
+    et_prediction
+)
+
+
+print("\nExtra Trees Performance")
+print("-" * 40)
+print("Accuracy:", round(et_accuracy, 4))
+
+# Cross Validation Comparison
+
+models = {
+    "Decision Tree": decision_tree,
+    "Bagging Classifier": bagging_classifier,
+    "Random Forest": random_forest,
+    "Extra Trees": extra_trees
+}
+
+
+print("\nCross Validation Performance")
+print("-" * 40)
+
+model_scores = {}
+
+for name, model in models.items():
+
+    scores = cross_val_score(
+        model,
+        X,
+        y,
+        cv=5,
+        scoring="accuracy"
+    )
+
+    mean_score = np.mean(scores)
+
+    model_scores[name] = mean_score
+
+    print(f"{name}: {mean_score:.4f}")
+
+# Find Best Model
+
+best_model = max(
+    model_scores,
+    key=model_scores.get
+)
+
+
+print("\nBest Model")
+print("-" * 40)
+
+print(
+    f"{best_model}: "
+    f"{model_scores[best_model]:.4f}"
+)
